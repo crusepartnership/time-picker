@@ -24,7 +24,6 @@ dist
 *.css
 build
 lib
-es
 coverage
 npm-debug.log.*
 yarn.lock
