@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import moment from 'moment';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import moment from "moment";
 
 class Header extends Component {
   static propTypes = {
@@ -25,19 +25,19 @@ class Header extends Component {
     currentSelectPanel: PropTypes.string,
     focusOnOpen: PropTypes.bool,
     onKeyDown: PropTypes.func,
-    clearIcon: PropTypes.node,
+    clearIcon: PropTypes.node
   };
 
   static defaultProps = {
-    inputReadOnly: false,
+    inputReadOnly: false
   };
 
   constructor(props) {
     super(props);
     const { value, format } = props;
     this.state = {
-      str: (value && value.format(format)) || '',
-      invalid: false,
+      str: (value && value.format(format)) || "",
+      invalid: false
     };
   }
 
@@ -45,7 +45,8 @@ class Header extends Component {
     const { focusOnOpen } = this.props;
     if (focusOnOpen) {
       // Wait one frame for the panel to be positioned before focusing
-      const requestAnimationFrame = window.requestAnimationFrame || window.setTimeout;
+      const requestAnimationFrame =
+        window.requestAnimationFrame || window.setTimeout;
       requestAnimationFrame(() => {
         this.refInput.focus();
         this.refInput.select();
@@ -56,15 +57,15 @@ class Header extends Component {
   componentWillReceiveProps(nextProps) {
     const { value, format } = nextProps;
     this.setState({
-      str: (value && value.format(format)) || '',
-      invalid: false,
+      str: (value && value.format(format)) || "",
+      invalid: false
     });
   }
 
-  onInputChange = event => {
+  onInputBlur = event => {
     const str = event.target.value;
     this.setState({
-      str,
+      str
     });
     const {
       format,
@@ -75,16 +76,41 @@ class Header extends Component {
       disabledMinutes,
       disabledSeconds,
       onChange,
-      allowEmpty,
+      allowEmpty
     } = this.props;
 
     if (str) {
       const { value: originalValue } = this.props;
       const value = this.getProtoValue().clone();
-      const parsed = moment(str, format, true);
+
+      let newFormat = "";
+      let inputValue = str.split(":");
+
+      if (inputValue.length === 1) {
+        if (inputValue[0].length === 1) {
+          newFormat = "h";
+        } else {
+          newFormat = "HH";
+        }
+      } else if (inputValue.length === 2) {
+        if (inputValue[0].length === 1) {
+          if (inputValue[1].length === 1) {
+            newFormat = "h:m";
+          } else {
+            newFormat = "h:mm";
+          }
+        } else {
+          newFormat = "HH:mm";
+        }
+      } else {
+        newFormat = format;
+      }
+
+      const parsed = moment(str, newFormat, true);
+
       if (!parsed.isValid()) {
         this.setState({
-          invalid: true,
+          invalid: true
         });
         return;
       }
@@ -100,7 +126,7 @@ class Header extends Component {
         secondOptions.indexOf(value.second()) < 0
       ) {
         this.setState({
-          invalid: true,
+          invalid: true
         });
         return;
       }
@@ -108,14 +134,20 @@ class Header extends Component {
       // if time value is disabled, response warning.
       const disabledHourOptions = disabledHours();
       const disabledMinuteOptions = disabledMinutes(value.hour());
-      const disabledSecondOptions = disabledSeconds(value.hour(), value.minute());
+      const disabledSecondOptions = disabledSeconds(
+        value.hour(),
+        value.minute()
+      );
       if (
-        (disabledHourOptions && disabledHourOptions.indexOf(value.hour()) >= 0) ||
-        (disabledMinuteOptions && disabledMinuteOptions.indexOf(value.minute()) >= 0) ||
-        (disabledSecondOptions && disabledSecondOptions.indexOf(value.second()) >= 0)
+        (disabledHourOptions &&
+          disabledHourOptions.indexOf(value.hour()) >= 0) ||
+        (disabledMinuteOptions &&
+          disabledMinuteOptions.indexOf(value.minute()) >= 0) ||
+        (disabledSecondOptions &&
+          disabledSecondOptions.indexOf(value.second()) >= 0)
       ) {
         this.setState({
-          invalid: true,
+          invalid: true
         });
         return;
       }
@@ -140,13 +172,108 @@ class Header extends Component {
       onChange(null);
     } else {
       this.setState({
-        invalid: true,
+        invalid: true
       });
       return;
     }
 
     this.setState({
-      invalid: false,
+      invalid: false
+    });
+  };
+
+  onInputChange = event => {
+    const str = event.target.value;
+    this.setState({
+      str
+    });
+    const {
+      format,
+      hourOptions,
+      minuteOptions,
+      secondOptions,
+      disabledHours,
+      disabledMinutes,
+      disabledSeconds,
+      onChange,
+      allowEmpty
+    } = this.props;
+
+    if (str) {
+      const { value: originalValue } = this.props;
+      const value = this.getProtoValue().clone();
+      const parsed = moment(str, format, true);
+      if (!parsed.isValid()) {
+        this.setState({
+          invalid: true
+        });
+        return;
+      }
+      value
+        .hour(parsed.hour())
+        .minute(parsed.minute())
+        .second(parsed.second());
+
+      // if time value not allowed, response warning.
+      if (
+        hourOptions.indexOf(value.hour()) < 0 ||
+        minuteOptions.indexOf(value.minute()) < 0 ||
+        secondOptions.indexOf(value.second()) < 0
+      ) {
+        this.setState({
+          invalid: true
+        });
+        return;
+      }
+
+      // if time value is disabled, response warning.
+      const disabledHourOptions = disabledHours();
+      const disabledMinuteOptions = disabledMinutes(value.hour());
+      const disabledSecondOptions = disabledSeconds(
+        value.hour(),
+        value.minute()
+      );
+      if (
+        (disabledHourOptions &&
+          disabledHourOptions.indexOf(value.hour()) >= 0) ||
+        (disabledMinuteOptions &&
+          disabledMinuteOptions.indexOf(value.minute()) >= 0) ||
+        (disabledSecondOptions &&
+          disabledSecondOptions.indexOf(value.second()) >= 0)
+      ) {
+        this.setState({
+          invalid: true
+        });
+        return;
+      }
+
+      if (originalValue) {
+        if (
+          originalValue.hour() !== value.hour() ||
+          originalValue.minute() !== value.minute() ||
+          originalValue.second() !== value.second()
+        ) {
+          // keep other fields for rc-calendar
+          const changedValue = originalValue.clone();
+          changedValue.hour(value.hour());
+          changedValue.minute(value.minute());
+          changedValue.second(value.second());
+          onChange(changedValue);
+        }
+      } else if (originalValue !== value) {
+        onChange(value);
+      }
+    } else if (allowEmpty) {
+      onChange(null);
+    } else {
+      this.setState({
+        invalid: true
+      });
+      return;
+    }
+
+    this.setState({
+      invalid: false
     });
   };
 
@@ -161,7 +288,7 @@ class Header extends Component {
 
   onClear = () => {
     const { onClear } = this.props;
-    this.setState({ str: '' });
+    this.setState({ str: "" });
     onClear();
   };
 
@@ -191,7 +318,7 @@ class Header extends Component {
   getInput() {
     const { prefixCls, placeholder, inputReadOnly } = this.props;
     const { invalid, str } = this.state;
-    const invalidClass = invalid ? `${prefixCls}-input-invalid` : '';
+    const invalidClass = invalid ? `${prefixCls}-input-invalid` : "";
     return (
       <input
         className={`${prefixCls}-input  ${invalidClass}`}

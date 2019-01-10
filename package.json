@@ -45,7 +45,6 @@
     "prepublish": "rc-tools run guard",
     "init-tslint": "rc-tools run init-tslint",
     "coverage": "rc-tools run test --coverage",
-    "pre-commit": "rc-tools run pre-commit",
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
@@ -62,7 +61,6 @@
   ],
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "npm run pre-commit",
       "git add"
     ]
   },
