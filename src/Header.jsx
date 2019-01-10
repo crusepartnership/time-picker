@@ -329,6 +329,7 @@ class Header extends Component {
         value={str}
         placeholder={placeholder}
         onChange={this.onInputChange}
+        onBlur={this.onInputBlur}
         readOnly={!!inputReadOnly}
       />
     );
