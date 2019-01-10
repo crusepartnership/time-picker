@@ -100,7 +100,11 @@ class Header extends Component {
             newFormat = "h:mm";
           }
         } else {
-          newFormat = "HH:mm";
+          if (inputValue[1].length === 1) {
+            newFormat = "HH:m";
+          } else {
+            newFormat = "HH:mm";
+          }
         }
       } else {
         newFormat = format;
